@@ -1,0 +1,8 @@
+
+{
+  "name": "Lịch 2026 Tinh Tế",
+  "description": "Một ứng dụng lịch hiện đại cho năm 2026 với khả năng quản lý sự kiện và tích hợp AI Gemini để tạo cảm hứng hàng tháng.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
