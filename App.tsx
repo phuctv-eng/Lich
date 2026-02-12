@@ -39,12 +39,15 @@ const CuteHorse = ({ className, mood = 'happy' }: { className?: string; mood?: '
 
 const STORAGE_KEY_EVENTS = 'calendar_events_2026_thao_phuc';
 const STORAGE_KEY_INSIGHTS = 'calendar_insights_cache_2026';
-const MUSIC_URL = 'https://raw.githubusercontent.com/NguyenXuanAn/audio-storage/main/xuan-oi-xuan-da-ve.mp3';
+const DEFAULT_MUSIC_URL = 'https://raw.githubusercontent.com/NguyenXuanAn/audio-storage/main/xuan-oi-xuan-da-ve.mp3';
 
 const App: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(0); 
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [musicSource, setMusicSource] = useState(DEFAULT_MUSIC_URL);
+  const [customMusicName, setCustomMusicName] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   
   const [events, setEvents] = useState<CalendarEvent[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EVENTS);
@@ -76,6 +79,19 @@ const App: React.FC = () => {
       audioRef.current.play().catch(e => console.log("Audio play blocked by browser. Click again!"));
     }
     setIsMusicPlaying(!isMusicPlaying);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setMusicSource(url);
+      setCustomMusicName(file.name);
+      setIsMusicPlaying(false); // Reset playback state for new track
+      if (audioRef.current) {
+        audioRef.current.load();
+      }
+    }
   };
 
   const fetchInsight = useCallback(async () => {
@@ -176,7 +192,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen pb-12 bg-[#FFF9F5] relative overflow-hidden selection:bg-red-200">
       {/* Background audio - Looping */}
-      <audio ref={audioRef} src={MUSIC_URL} loop />
+      <audio ref={audioRef} src={musicSource} loop />
 
       {/* Background patterns */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.03]">
@@ -199,21 +215,42 @@ const App: React.FC = () => {
                 <h1 className="text-2xl font-black tracking-tighter text-yellow-300 drop-shadow-lg leading-tight">
                   XUÂN BÍNH NGỌ 2026
                 </h1>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-extrabold text-red-50">
-                    <span className="bg-yellow-400 text-red-700 px-2 py-0.5 rounded text-[10px] uppercase mr-2">Gia Đình</span>
+                    <span className="bg-yellow-400 text-red-700 px-2 py-0.5 rounded text-[10px] uppercase mr-1">Gia Đình</span>
                     Hồ Thị Thu Thảo & Trần Vĩnh Phúc
                   </p>
-                  {/* Music Toggle Button */}
-                  <button 
-                    onClick={toggleMusic}
-                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all shadow-md ${isMusicPlaying ? 'bg-yellow-400 text-red-700 animate-pulse' : 'bg-red-800 text-white opacity-80'}`}
-                  >
-                    <span className={`text-sm ${isMusicPlaying ? 'animate-spin-slow' : ''}`}>
-                      {isMusicPlaying ? '🏮' : '🔇'}
-                    </span>
-                    {isMusicPlaying ? 'Nhạc Xuân Đang Phát' : 'Bật Nhạc Xuân'}
-                  </button>
+                  
+                  {/* Music Controls */}
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={toggleMusic}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all shadow-md ${isMusicPlaying ? 'bg-yellow-400 text-red-700 animate-pulse' : 'bg-red-800 text-white opacity-80'}`}
+                    >
+                      <span className={`text-xs ${isMusicPlaying ? 'animate-spin-slow' : ''}`}>
+                        {isMusicPlaying ? '🏮' : '🔇'}
+                      </span>
+                      {isMusicPlaying ? (customMusicName ? `Đang phát: ${customMusicName}` : 'Nhạc Xuân Đang Phát') : 'Phát Nhạc'}
+                    </button>
+                    
+                    {/* Upload Music Button */}
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-white/10 hover:bg-white/30 border border-white/20 p-1 rounded-full transition-all group"
+                      title="Tải nhạc của bạn"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleFileUpload} 
+                      accept="audio/*" 
+                      className="hidden" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>
